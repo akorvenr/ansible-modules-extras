@@ -73,6 +73,14 @@ options:
         otherise it is applied to all VMs in the vApp.
     required: no
     default: None
+  vm_disk:
+    description:
+      - The amount of root disk in MB to allocate to VMs in the vApp.  If the
+        I(vm_name) argument is provided, then this becomes a per VM setting
+        otherise it is applied to all VMs in the vApp.
+        Can be used when service type is vcd.
+    required: no
+    default: None
   operation:
     description:
       - Specifies an operation to be performed on the vApp.
@@ -178,12 +186,14 @@ def create(module):
     vm_name = module.params['vm_name']
     vm_cpus = module.params['vm_cpus']
     vm_memory = module.params['vm_memory']
+    vm_disk = module.params['vm_disk']
     deploy = module.params['state'] == 'deploy'
     poweron = module.params['operation'] == 'poweron'
 
     task = module.vca.create_vapp(vdc_name, vapp_name, template_name,
                                   catalog_name, network_name, network_mode,
-                                  vm_name, vm_cpus, vm_memory, deploy, poweron)
+                                  vm_name, vm_cpus, vm_memory, vm_disk,
+                                  deploy, poweron)
 
     module.vca.block_until_completed(task)
 
@@ -238,6 +248,7 @@ def main():
         vm_name=dict(),
         vm_cpus=dict(),
         vm_memory=dict(),
+        vm_disk=dict(),
         operation=dict(default=DEFAULT_VAPP_OPERATION, choices=VAPP_OPERATIONS),
         state=dict(default='present', choices=VAPP_STATES)
     )
